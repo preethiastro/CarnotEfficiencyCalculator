@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+
+    <!-- The loading of KaTeX is deferred to speed up page rendering -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+
+    <!-- To automatically render math in text elements, include the auto-render extension: -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            refreshMath();
+        });
+        function refreshMath(){
+        renderMathInElement(document.body, {
+            // customised options
+            // • auto-render specific keys, e.g.:
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+            ],
+            // • rendering keys, e.g.:
+            throwOnError : false
+            });
+        }
+    </script>
+    <title>Carnot Efficiency on T-S Diagram</title>
+    <style>
+        *,*::before,*::after{
+            box-sizing: border-box;
+            margin:0;
+        }
+
+        body {
+        font-family: Geneva, Verdana, Tahoma, sans-serif;
+        margin: 0;
+        width:100%;   
+        }
+        h1{
+            background-color: #A3C1AD;
+            text-align: center;
+            padding: 0.5rem;
+            width:100%;
+        }
+        canvas {
+            width: 50vw;
+            border: 1px solid black;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .equation{
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+        }
+        .equation_item{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        .contents{
+            display:flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding-top: 1rem;
+            padding-bottom:1rem;
+            margin:0;
+        }
+        .calculationContainer{
+            border-radius: 1rem;
+            background-color: beige;
+            padding: 0.5rem 1.75rem 0.5rem 1.75rem;
+            margin:0.25rem
+            }
+            #carnot_efficiency_display{
+                font-weight: bold;
+                color: red;
+                font-size: x-large;
+                padding-left: 1rem;
+
+
+            }
+            #real_efficiency_display{
+                color:blue;
+                font-weight: bold;
+                font-size: x-large;
+                padding-left: 1rem;
+
+            }
+
+         /* Media query for mobile devices */
+         @media only screen and (max-width: 600px)  {
+            body{
+                font-size:smaller;
+            }
+           .equation {
+               /* flex-direction: column; /* Change to column on smaller screens */
+            }
+            h1 {
+                font-size: larger;
+            }
+            .contents{
+                flex-direction: column;
+                justify-content: left;
+                gap:0.1rem;
+                padding-top: 0.1rem;
+            }
+
+            canvas{
+                width: 96vw;
+            }
+            .calculationContainer{
+                font-size: 0.65rem;
+                width:90%;
+            }
+        }
+        /* Media query for mobile devices */
+        @media (min-width: 600px) and (max-width: 1024px) {
+
+            h1 {
+                font-size: larger;
+            }
+            .contents{
+                flex-direction: row;
+            }
+            canvas{
+                width: 50vw;
+                height:90%;
+            }
+            .calculationContainer{
+                font-size: 0.65rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Carnot Efficiency (T-S Diagram)</h1>
+    <div class="contents">
+    <div class="canvasContainer">
+        <canvas id="tsDiagram" width="600" height="400"></canvas>
+    <div id="statusMessage">Temperature: N/A | Entropy: N/A</div>
+    </div>
+
+    <div class="calculationContainer">
+        <div id="Q1" class="equation">
+            <div class="equation_item">
+                <div>
+                    $$Q_1=\int_{\text{path heat addition}} T dS = $$
+                </div>
+                <div id="Q_1_display">N/A</div>
+            </div>
+        </div>
+        <div id="Q2" class="equation">
+            <div class="equation_item">
+                <div>
+                    $$Q_2=\int_{\text{path heat rejection}} T dS = $$
+                </div>
+                <div id="Q_2_display">N/A</div>
+            </div>
+        </div>
+        <div id="workdone" class="equation">
+            <div class="equation_item">
+                <div> $$W=Q_1-Q_2 -\Delta U =$$</div>
+                <div id="W_display">N/A</div>
+                <div> $$\quad \Delta U =$$</div>
+                <div id="U_display"> N/A </div>
+            </div>
+            
+        </div>
+        <div id = "temp_display" class="equation">
+            <div class="equation_item">Carnot efficiency: </div> 
+            <div class="equation_item"><div >Path max. temp $ T_1 =  $</div>   <div id = "T_h_path"> N/A </div> </div> 
+            <div class="equation_item"><div >Path min. temp $ T_2 =  $</div>   <div id = "T_c_path"> N/A </div> </div> 
+        </div>
+    
+        <div class="equation">
+            <div class="equation_item">
+                <div>
+                    $$\eta_{\tiny{\text{Carnot}}} = 1 - \frac{T_2}{T_1} =$$</div>
+                    <div id="carnot_efficiency_display">N/A</div>
+                </div>
+        </div>
+        <div class="equation">Real thermal efficiency of the path drawn: </div>
+    
+        <div class="equation">
+            <div class="equation_item">
+                <div>
+                    $$\eta_{\tiny{\text{real}}} = \frac{W}{Q_1} =$$</div>
+            <div id="real_efficiency_display">N/A</div>
+                </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+        const canvas = document.getElementById("tsDiagram");
+        const ctx = canvas.getContext("2d");
+
+        // Temperature limits for the Carnot cycle
+        const T_c = 300; // Minimum temperature (cold reservoir) in Kelvin
+        const T_h = 900; // Maximum temperature (hot reservoir) in Kelvin
+        let T_h_path = 900; // Maximum temperature of the path
+        let T_c_path = 300; // Minimum temperature of the path
+
+        // Specific heat of the gas 
+        const cv = 0.718; // kJ/kg.K 
+
+        // Entropy limits for the diagram (kJ/kg.K)
+        const S_min = 0;
+        const S_max = 10;
+        // Variables to track user-drawn points
+        let points = [];
+        let isDrawing = false;
+        let Q1 = 0;
+        let Q2 = 0;
+
+        // Draw the axes and temperature lines for the T-S diagram
+        function drawAxes() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the x-axis (Entropy)
+            ctx.lineWidth = 3;  // Set line thickness
+            ctx.beginPath();
+            ctx.moveTo(50, canvas.height - 50);
+            ctx.lineTo(canvas.width - 50, canvas.height - 50);
+            ctx.stroke();
+
+            // Draw the y-axis (Temperature)
+            ctx.beginPath();
+            ctx.moveTo(50, canvas.height - 50);
+            ctx.lineTo(50, 50);
+            ctx.stroke();
+
+            // Label the axes
+            ctx.font = "16px Arial";
+            ctx.fillText("Entropy (S in kJ/K)", canvas.width/2-60, canvas.height - 10);
+            ctx.fillText("Temperature (T in K)", 10, 40);
+
+             // Temperature range labels
+             ctx.fillText(`${T_h} K`, 4, 60);  // Hot temperature at top
+            ctx.fillText(`${T_c} K`, 4, canvas.height - 60); // Cold temperature at bottom
+
+            // Entropy range labels
+            ctx.fillText(`${S_min}`, 55, canvas.height - 30); // Minimum entropy on x-axis
+            ctx.fillText(`${S_max}`, canvas.width - 80, canvas.height - 30); // Maximum entropy on x-axis
+
+            // Draw temperature lines
+            drawTemperatureLines();
+        }
+
+        // Function to draw the hot and cold temperature lines
+        function drawTemperatureLines() {
+            const hotY = temperatureToCanvas(T_h);
+            const coldY = temperatureToCanvas(T_c);
+
+            // Draw the hot temperature line (T_h)
+            ctx.beginPath();
+            ctx.moveTo(50, hotY);
+            ctx.lineTo(canvas.width - 50, hotY);
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+            ctx.fillText(`${T_h} K`, canvas.width - 120, hotY - 5);
+
+            // Draw the cold temperature line (T_c)
+            ctx.beginPath();
+            ctx.moveTo(50, coldY);
+            ctx.lineTo(canvas.width - 50, coldY);
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+            ctx.fillText(`${T_c} K`, canvas.width - 120, coldY - 5);
+
+            // Reset stroke style to default
+            ctx.strokeStyle = 'black';
+        }
+
+        // Function to draw the user's path (cycle)
+        function drawPath() {
+            if (points.length < 2) return;
+
+            // Clear canvas and draw axes again
+            drawAxes();
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y); // Start at the first point
+
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y); // Draw lines between the points
+            }
+
+            // Automatically close the path (connect last point to first)
+           // ctx.lineTo(points[0].x, points[0].y);
+
+            ctx.stroke();
+        }
+
+        // Function to calculate Carnot efficiency
+        function calculateCarnotEfficiency() {
+            if (points.length < 2) return;
+
+            let T_c_path = T_h;
+            let T_h_path = T_c;
+
+            // Iterate over points to find the min/max temperatures
+            points.forEach(point => {
+                const temp = canvasToTemperature(point.y);
+                if (temp < T_c_path) T_c_path = temp;
+                if (temp > T_h_path) T_h_path = temp;
+            });
+
+            updateT_c_path(T_c_path);
+            updateT_h_path(T_h_path);
+            // Calculate Carnot efficiency: η = 1 - T_cold / T_hot
+            const efficiency = 1 - (T_c_path / T_h_path);
+
+
+
+            refreshMath();
+            return efficiency;
+        }
+
+        // Function to calculate the real efficiency using Q1 and Q2
+        function calculateRealEfficiency() {
+            if (points.length < 4) return; // We need at least 4 points for a complete cycle
+
+            // Split points into two segments: top curve for Q1 and bottom curve for Q2
+            // const topCurve = points.slice(0, points.length / 2);
+            // const bottomCurve = points.slice(points.length / 2);
+
+            // Compute Q1 and Q2 using trapezoidal rule integration
+            // const Q1 = integrateArea(topCurve);
+            // const Q2 = integrateArea(bottomCurve);
+            let workdone = 0;
+            let delU=0;
+            Q1 = 0;
+            Q2 = 0;
+            for (let i = 0; i < points.length - 1; i++) {
+                const x1 = canvasToEntropy(points[i].x);
+                const y1 = canvasToTemperature(points[i].y);
+                const x2 = canvasToEntropy(points[i + 1].x);
+                const y2 = canvasToTemperature(points[i + 1].y);
+
+                // Trapezoidal area between two points
+                const base = x2 - x1;
+                const height = (y1 + y2) / 2;
+                const dT = y2 - y1;
+                let area = base * height; // dQ
+                let dU = cv*dT;
+                delU +=dU
+                workdone += area - dU;
+                if (base<0){
+                    Q2+=-base*height;
+                }else{
+                    Q1+=area;
+                }
+            }
+            // check
+           // if(Q1-Q2 -workdone <1e-3){
+                console.log(`Q1: ${Q1} Q2: ${Q2} W: ${workdone} `)
+                updateQ_1(Q1)
+                updateQ_2(Q2)
+                updateW(workdone)
+                updateU(delU)
+            //}
+            // Real efficiency: η_real = 1 - Q2 / Q1
+            const realEfficiency = workdone / Q1;
+
+            return realEfficiency;
+        }
+
+        // Trapezoidal rule integration to find the area under a curve
+        function integrateArea(curve) {
+            let area = 0;
+            for (let i = 0; i < curve.length - 1; i++) {
+                const x1 = curve[i].x;
+                const y1 = canvasToTemperature(curve[i].y);
+                const x2 = curve[i + 1].x;
+                const y2 = canvasToTemperature(curve[i + 1].y);
+
+                // Trapezoidal area between two points
+                const base = Math.abs(x2 - x1);
+                const height = (y1 + y2) / 2;
+                area += base * height;
+            }
+            return area;
+        }
+
+        // Convert canvas Y-coordinate to temperature (assuming linear mapping)
+        function canvasToTemperature(y) {
+            const canvasHeight = canvas.height - 100; // Account for padding
+            const tempRange = T_h - T_c;
+            return T_h - ((y - 50) / canvasHeight) * tempRange;
+        }
+
+        // Convert temperature to canvas Y-coordinate
+        function temperatureToCanvas(temperature) {
+            const canvasHeight = canvas.height - 100; // Account for padding
+            const tempRange = T_h - T_c;
+            return 50 + (T_h - temperature) * (canvasHeight / tempRange);
+        }
+
+        // Start drawing
+        function startDrawing(event)
+        {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const pos = getPosition(event);
+            const x = pos.x;
+            const y = pos.y;
+
+            // Add the starting point of the path
+            points = [];
+            points.push({ x, y });
+            event.preventDefault(); // Prevent scrolling on touch devices
+        }
+
+        // Continue drawing
+        function draw(event) {
+            const rect = canvas.getBoundingClientRect();
+            const pos = getPosition(event);
+            const x = pos.x;
+            const y = pos.y;
+            console.log(`x:${x} y:${y}`)
+            showCoordinates(x,y);
+            if (!isDrawing) return;
+            event.preventDefault(); // Prevent scrolling on touch devices
+            points.push({ x, y });
+            drawPath(); // Redraw the path with the new point
+        }
+
+         // Stop drawing
+         function stopDrawing()
+         {
+            isDrawing = false;
+
+            // Close the cycle (connect last point to the first)
+            drawPath();
+
+            // Calculate and display the efficiencies
+            const carnotEfficiency = calculateCarnotEfficiency();
+            const realEfficiency = calculateRealEfficiency();
+
+            updateCarnotEfficiency(carnotEfficiency);
+            updateRealEfficiency(realEfficiency); 
+        };
+
+        // Mouse events
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Touch events
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+
+        // Helper to get the correct position for both mouse and touch events
+        function getPosition(event) {
+            const rect = canvas.getBoundingClientRect();
+            if (event.touches) {
+                // For touch events, we use the first touch point (event.touches[0])
+                return {
+                    x: event.touches[0].clientX - rect.left,
+                    y: event.touches[0].clientY - rect.top
+                };
+            } else {
+                // For mouse events, we use clientX and clientY
+                return {
+                    x: event.clientX - rect.left,
+                    y: event.clientY - rect.top
+                };
+            }
+
+        }
+
+        // Function to convert canvas X-coordinate to entropy (assuming linear mapping)
+        function canvasToEntropy(x) {
+            const canvasWidth = canvas.width - 100; // Account for padding
+            const entropyRange = S_max - S_min;
+            return S_min + ((x - 50) / canvasWidth) * entropyRange;
+        }
+       
+        // Convert canvas Y-coordinate to temperature (assuming linear mapping)
+        function canvasToTemperature(y) {
+            const canvasHeight = canvas.height - 100; // Account for padding
+            const tempRange = T_h - T_c;
+            return T_h - ((y - 50) / canvasHeight) * tempRange;
+        }
+
+        function updateCarnotEfficiency(carnotEfficiency){
+            const carnot_efficiency_display_Div = document.getElementById("carnot_efficiency_display");
+            carnot_efficiency_display_Div.innerHTML = "$" + (carnotEfficiency*100).toFixed(2)+" \\% $";
+            refreshMath();
+        }
+        function updateRealEfficiency(realEfficiency){
+            const real_efficiency_display_Div = document.getElementById("real_efficiency_display");
+            real_efficiency_display_Div.innerHTML ="$" +  (100*realEfficiency).toFixed(2)+"  \\% $";
+            refreshMath();
+        }
+        function updateT_c_path(T_c_path){
+            const T_c_path_display_Div = document.getElementById("T_c_path");
+            T_c_path_display_Div.innerHTML ="$" +  (T_c_path).toFixed(2)+" \\; \\text{K}$";
+            refreshMath();
+        }
+        function updateT_h_path(T_h_path){
+            const T_h_path_display_Div = document.getElementById("T_h_path");
+            T_h_path_display_Div.innerHTML ="$" +  (T_h_path).toFixed(2)+" \\; \\text{K}$";
+            refreshMath();
+        }
+        function updateQ_1(Q_1){
+            const Q_1_display_Div = document.getElementById("Q_1_display");
+            Q_1_display_Div.innerHTML ="$" +  (Q_1).toFixed(2)+" \\; \\text{kJ}$";
+            refreshMath();
+        }
+        function updateQ_2(Q_2){
+            const Q_2_display_Div = document.getElementById("Q_2_display");
+            Q_2_display_Div.innerHTML ="$" +  (Q_2).toFixed(2)+" \\; \\text{kJ}$";
+            refreshMath();
+        }
+        function updateW(W){
+            const W_display_Div = document.getElementById("W_display");
+            W_display_Div.innerHTML ="$" +  (W).toFixed(2)+" \\; \\text{kJ}$";
+            refreshMath();
+        }
+        function updateU(U){
+            const U_display_Div = document.getElementById("U_display");
+            U_display_Div.innerHTML ="$" +  (U).toFixed(2)+" \\; \\text{kJ}$";
+            refreshMath();
+        }
+        function showCoordinates(x,y){
+            // Convert canvas coordinates to temperature and entropy
+            const temperature = canvasToTemperature(y).toFixed(2);
+            const entropy = canvasToEntropy(x).toFixed(2);
+
+                
+            const outputDiv = document.getElementById("statusMessage");
+            outputDiv.innerHTML = `Temperature: ${temperature} K | Entropy: ${entropy} kJ/K  `;
+        }
+        // Initial draw
+        drawAxes();
+
+
+        window.addEventListener("resize",canvasResize);
+        function canvasResize(){
+            let rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            drawAxes();
+        }
+        canvasResize();
+    </script>
+</body>
+</html>
