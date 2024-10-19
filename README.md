@@ -1,0 +1,2 @@
+# CarnotEfficiencyCalculator
+Thermodynamic cycle efficiency calculator
